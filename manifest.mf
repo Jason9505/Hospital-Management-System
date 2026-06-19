@@ -1,3 +1,0 @@
-D001|Dr Lim|Cardiology
-D002|Dr Wong|Pediatrics
-D003|Dr Lee|Neurology
