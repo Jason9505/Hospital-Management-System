@@ -1,29 +1,76 @@
+public class Appointment {
 
-public class Doctor {
+    private String appointmentID;
+    private Patient patient;
+    private Doctor doctor;
+    private String date;
+    private String time;
 
-    private String doctorID;
-    private String name;
-    private String specialization;
+    public Appointment(String appointmentID,
+                       Patient patient,
+                       Doctor doctor,
+                       String date,
+                       String time) {
 
-    public Doctor(String doctorID,
-                  String name,
-                  String specialization) {
-
-        this.doctorID = doctorID;
-        this.name = name;
-        this.specialization = specialization;
+        this.appointmentID = appointmentID;
+        this.patient = patient;
+        this.doctor = doctor;
+        this.date = date;
+        this.time = time;
     }
 
-    public String getDoctorID() {
-        return doctorID;
+    public String getAppointmentID() {
+        return appointmentID;
     }
 
-    public String getName() {
-        return name;
+    public Patient getPatient() {
+        return patient;
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public Doctor getDoctor() {
+        return doctor;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public String toFileLine() {
+        return appointmentID + "|" + patient.getPatientID() + "|"
+                + doctor.getDoctorID() + "|" + date + "|" + time;
+    }
+
+    public static Appointment fromFileLine(String line,
+                                            PatientManager patientManager,
+                                            DoctorManager doctorManager) {
+
+        if (line == null || line.trim().isEmpty()) {
+            return null;
+        }
+
+        String[] parts = line.split("\\|", -1);
+
+        if (parts.length < 5) {
+            return null;
+        }
+
+        String appointmentID = parts[0];
+        String patientID = parts[1];
+        String doctorID = parts[2];
+        String date = parts[3];
+        String time = parts[4];
+
+        Patient patient = patientManager.findPatientByID(patientID);
+        Doctor doctor = doctorManager.findDoctorByID(doctorID);
+
+        if (patient == null || doctor == null) {
+            return null;
+        }
+
+        return new Appointment(appointmentID, patient, doctor, date, time);
     }
 }

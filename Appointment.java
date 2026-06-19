@@ -1,42 +1,15 @@
-
-public class Appointment {
-
-    private String appointmentID;
-    private Patient patient;
-    private Doctor doctor;
-    private String date;
-    private String time;
-
-    public Appointment(String appointmentID,
-                       Patient patient,
-                       Doctor doctor,
-                       String date,
-                       String time) {
-
-        this.appointmentID = appointmentID;
-        this.patient = patient;
-        this.doctor = doctor;
-        this.date = date;
-        this.time = time;
-    }
-
-    public String getAppointmentID() {
-        return appointmentID;
-    }
-
-    public Patient getPatient() {
-        return patient;
-    }
-
-    public Doctor getDoctor() {
-        return doctor;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public String getTime() {
-        return time;
-    }
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.java.j2seproject</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
+            <name>Lab Exercise Hospital Management</name>
+            <source-roots>
+                <root id="src.dir"/>
+            </source-roots>
+            <test-roots>
+                <root id="test.src.dir"/>
+            </test-roots>
+        </data>
+    </configuration>
+</project>
