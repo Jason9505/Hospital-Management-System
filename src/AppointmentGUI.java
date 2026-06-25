@@ -8,10 +8,10 @@ import java.time.format.DateTimeParseException;
 
 public class AppointmentGUI extends JFrame 
 {
-
-    private PatientManager patientManager = new PatientManager();
-    private DoctorManager doctorManager = new DoctorManager();
-    private AppointmentManager manager = new AppointmentManager(patientManager, doctorManager);
+    private User loggedInUser; // ADDED: track who is viewing this screen
+    private PatientManager patientManager; // CHANGED: now accepts shared manager
+    private DoctorManager doctorManager; // CHANGED: now accepts shared manager
+    private AppointmentManager manager; // CHANGED: now accepts shared manager
 
     private JComboBox<Patient> patientBox;
     private JComboBox<Doctor> doctorBox;
@@ -21,8 +21,14 @@ public class AppointmentGUI extends JFrame
     private JTable appointmentTable;
     private DefaultTableModel tableModel;
 
-    public AppointmentGUI() 
+    // CHANGED: constructor now accepts User context and all three shared managers
+    public AppointmentGUI(User user, PatientManager sharedPM, DoctorManager sharedDM, AppointmentManager sharedAM) 
     {
+        this.loggedInUser = user;
+        this.patientManager = sharedPM;
+        this.doctorManager = sharedDM;
+        this.manager = sharedAM;
+
         setTitle("Hospital Management System - Appointment Booking");
         setSize(800, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -32,9 +38,32 @@ public class AppointmentGUI extends JFrame
         loadPatients();
         loadDoctors();
         loadTimes();
+        applyRoleRestrictions(); // ADDED: restrict UI for Doctor role
         loadExistingAppointments();
 
         setVisible(true);
+    }
+
+    // ADDED: for Doctor users, pre-select their doctor profile, disable changes, and filter table
+    private void applyRoleRestrictions() 
+    {
+        if (loggedInUser.getRole().equals("Doctor")) 
+        {
+            DoctorUser docUser = (DoctorUser) loggedInUser;
+            // pre-select the logged-in doctor in the doctor combo box
+            for (int i = 0; i < doctorBox.getItemCount(); i++) 
+            {
+                Doctor d = doctorBox.getItemAt(i);
+                if (d.getDoctorID().equals(docUser.getDoctorID())) 
+                {
+                    doctorBox.setSelectedIndex(i);
+                    break;
+                }
+            }
+            // disable doctor selection and booking for view-only access
+            doctorBox.setEnabled(false);
+            bookButton.setEnabled(false);
+        }
     }
 
     private void initializeComponents() 
@@ -105,6 +134,7 @@ public class AppointmentGUI extends JFrame
 
     private void loadPatients() 
     {
+        // CHANGED: only seed sample data if the shared manager's list is empty
         if (patientManager.getPatients().isEmpty()) 
         {
             patientManager.addPatient(new Patient("P001", "John Tan", 34, "Male", "No known allergies"));
@@ -120,6 +150,7 @@ public class AppointmentGUI extends JFrame
 
     private void loadDoctors() 
     {
+        // CHANGED: only seed if the shared manager's list is empty
         if (doctorManager.getDoctors().isEmpty()) {
             doctorManager.addDoctor(new Doctor("D001", "Dr Lim", "Cardiology"));
             doctorManager.addDoctor(new Doctor("D002", "Dr Wong", "Pediatrics"));
@@ -141,9 +172,21 @@ public class AppointmentGUI extends JFrame
         timeBox.addItem("15:00");
     }
 
+    // CHANGED: filter table to only show the logged-in doctor's appointments if role is Doctor
     private void loadExistingAppointments() 
     {
-        for (Appointment a : manager.getAppointments()) {
+        String doctorFilter = null;
+        if (loggedInUser.getRole().equals("Doctor")) 
+        {
+            doctorFilter = ((DoctorUser) loggedInUser).getDoctorID();
+        }
+
+        for (Appointment a : manager.getAppointments()) 
+        {
+            if (doctorFilter != null && !a.getDoctor().getDoctorID().equals(doctorFilter)) 
+            {
+                continue; // skip appointments not belonging to this doctor
+            }
             tableModel.addRow(new Object[]{
                 a.getAppointmentID(),
                 a.getPatient().getName(),
@@ -217,18 +260,5 @@ public class AppointmentGUI extends JFrame
         {
             JOptionPane.showMessageDialog(this,"Duplicate Time Slot!\n" + "Doctor already has an appointment " + "at this date and time.");
         }
-    }
-
-    public static void main(String[] args) 
-    {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() 
-            {
-                new AppointmentGUI();
-            }
-
-        });
     }
 }

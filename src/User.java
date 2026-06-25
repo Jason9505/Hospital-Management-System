@@ -60,7 +60,9 @@ public abstract class User
             case "Admin":
                 return new Admin(username, password);
             case "Doctor":
-                return new DoctorUser(username, password);
+                // CHANGED: parse optional 4th column as doctorID to link DoctorUser to Doctor profile
+                String doctorID = parts.length > 3 ? parts[3] : "";
+                return new DoctorUser(username, password, doctorID);
             case "Receptionist":
                 return new Receptionist(username, password);
             default:

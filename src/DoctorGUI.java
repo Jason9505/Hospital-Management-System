@@ -5,9 +5,9 @@ import java.awt.event.*;
 
 public class DoctorGUI extends JFrame 
 {
-    private DoctorManager doctorManager = new DoctorManager();
-
-    private AppointmentManager appointmentManager;
+    private User loggedInUser; // ADDED: track who is viewing this screen
+    private DoctorManager doctorManager; // CHANGED: now accepts shared manager
+    private AppointmentManager appointmentManager; // CHANGED: now accepts shared manager
 
     private JTextField idField;
     private JTextField nameField;
@@ -21,13 +21,11 @@ public class DoctorGUI extends JFrame
     private JTable doctorTable;
     private DefaultTableModel tableModel;
 
-    public DoctorGUI() 
+    // CHANGED: constructor now accepts User context and shared managers
+    public DoctorGUI(User user, DoctorManager sharedDoctorManager, AppointmentManager sharedAppointmentManager) 
     {
-        this(new AppointmentManager(new PatientManager(), new DoctorManager()));
-    }
-
-    public DoctorGUI(AppointmentManager sharedAppointmentManager) 
-    {
+        this.loggedInUser = user;
+        this.doctorManager = sharedDoctorManager;
         this.appointmentManager = sharedAppointmentManager;
 
         setTitle("Hospital Management System - Doctor Management");
@@ -36,9 +34,20 @@ public class DoctorGUI extends JFrame
         setLocationRelativeTo(null);
 
         initializeComponents();
+        applyRoleRestrictions(); // ADDED: disable mutation buttons for non-Admin roles
         loadSampleDoctors();
 
         setVisible(true);
+    }
+
+    // ADDED: disable add/remove buttons for non-Admin users (view-only)
+    private void applyRoleRestrictions() 
+    {
+        if (!loggedInUser.getRole().equals("Admin")) 
+        {
+            addButton.setEnabled(false);
+            removeButton.setEnabled(false);
+        }
     }
 
     private void initializeComponents() 
@@ -143,7 +152,7 @@ public class DoctorGUI extends JFrame
 
     private void loadSampleDoctors() 
     {
-
+        // CHANGED: only seed if the shared manager's list is empty
         if (doctorManager.getDoctors().isEmpty()) 
         {
             doctorManager.addDoctor(new Doctor("D001", "Dr Lim", "Cardiology"));
@@ -277,17 +286,5 @@ public class DoctorGUI extends JFrame
     public DoctorManager getManager() 
     {
         return doctorManager;
-    }
-
-    public static void main(String[] args) 
-    {
-        SwingUtilities.invokeLater(new Runnable() 
-        {
-            @Override
-            public void run() 
-            {
-                new DoctorGUI();
-            }
-        });
     }
 }

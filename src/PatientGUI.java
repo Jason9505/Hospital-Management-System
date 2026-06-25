@@ -5,7 +5,8 @@ import java.awt.event.*;
 
 public class PatientGUI extends JFrame 
 {
-    private PatientManager manager = new PatientManager();
+    private User loggedInUser; // ADDED: track who is viewing this screen
+    private PatientManager manager; // CHANGED: now accepts shared manager instead of creating its own
 
     private JTextField idField;
     private JTextField nameField;
@@ -21,8 +22,11 @@ public class PatientGUI extends JFrame
     private JTable patientTable;
     private DefaultTableModel tableModel;
 
-    public PatientGUI() 
+    // CHANGED: constructor now accepts User context and shared PatientManager
+    public PatientGUI(User user, PatientManager sharedManager) 
     {
+        this.loggedInUser = user;
+        this.manager = sharedManager;
 
         setTitle("Hospital Management System - Patient Records");
         setSize(850, 550);
@@ -30,9 +34,21 @@ public class PatientGUI extends JFrame
         setLocationRelativeTo(null);
 
         initializeComponents();
+        applyRoleRestrictions(); // ADDED: disable mutation buttons for view-only roles
         loadSamplePatients();
 
         setVisible(true);
+    }
+
+    // ADDED: disable add/update/remove buttons for Doctor (view-only)
+    private void applyRoleRestrictions() 
+    {
+        if (loggedInUser.getRole().equals("Doctor")) 
+        {
+            addButton.setEnabled(false);
+            updateButton.setEnabled(false);
+            removeButton.setEnabled(false);
+        }
     }
 
     private void initializeComponents() 
@@ -148,7 +164,7 @@ public class PatientGUI extends JFrame
 
     private void loadSamplePatients() 
     {
-
+        // CHANGED: only seed sample data if the shared manager's list is empty
         if (manager.getPatients().isEmpty()) 
         {
             manager.addPatient(new Patient("P001", "John Tan", 34, "Male", "No known allergies"));
@@ -303,17 +319,5 @@ public class PatientGUI extends JFrame
     public PatientManager getManager() 
     {
         return manager;
-    }
-
-    public static void main(String[] args) 
-    {
-        SwingUtilities.invokeLater(new Runnable() 
-        {
-            @Override
-            public void run() 
-            {
-                new PatientGUI();
-            }
-        });
     }
 }

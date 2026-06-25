@@ -95,7 +95,9 @@ public class UserManager
     private void createDefaultUsers() 
     {
         users.add(new Admin("admin", "admin123"));
-        users.add(new DoctorUser("drlim", "pass123"));
+        users.add(new DoctorUser("drlim", "pass123", "D001")); // CHANGED: linked to Dr Lim's Doctor profile (D001)
+        users.add(new DoctorUser("drwong", "pass123", "D002")); // ADDED: login for Dr Wong (Pediatrics)
+        users.add(new DoctorUser("drlee", "pass123", "D003")); // ADDED: login for Dr Lee (Neurology)
         users.add(new Receptionist("reception", "pass123"));
     }
 }

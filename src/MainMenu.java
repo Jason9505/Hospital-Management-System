@@ -6,6 +6,11 @@ public class MainMenu extends JFrame
 {
     private User loggedInUser;
 
+    // ADDED: shared manager instances so all sub-GUIs share the same data layer
+    private PatientManager patientManager;
+    private DoctorManager doctorManager;
+    private AppointmentManager appointmentManager;
+
     private JButton appointmentButton;
     private JButton patientButton;
     private JButton doctorButton;
@@ -16,6 +21,11 @@ public class MainMenu extends JFrame
     public MainMenu(User user) 
     {
         this.loggedInUser = user;
+
+        // ADDED: create managers once and share across all sub-windows
+        patientManager = new PatientManager();
+        doctorManager = new DoctorManager();
+        appointmentManager = new AppointmentManager(patientManager, doctorManager);
 
         setTitle("Hospital Management System");
         setSize(420, 420);
@@ -81,12 +91,13 @@ public class MainMenu extends JFrame
 
         add(buttonPanel, BorderLayout.CENTER);
 
+        // CHANGED: pass loggedInUser and shared managers to every sub-GUI
         appointmentButton.addActionListener(new ActionListener() 
         {
             @Override
             public void actionPerformed(ActionEvent e) 
             {
-                new AppointmentGUI();
+                new AppointmentGUI(loggedInUser, patientManager, doctorManager, appointmentManager);
             }
         });
 
@@ -95,7 +106,7 @@ public class MainMenu extends JFrame
             @Override
             public void actionPerformed(ActionEvent e) 
             {
-                new PatientGUI();
+                new PatientGUI(loggedInUser, patientManager);
             }
         });
 
@@ -104,7 +115,7 @@ public class MainMenu extends JFrame
             @Override
             public void actionPerformed(ActionEvent e) 
             {
-                new DoctorGUI();
+                new DoctorGUI(loggedInUser, doctorManager, appointmentManager);
             }
         });
 
@@ -137,24 +148,21 @@ public class MainMenu extends JFrame
         });
     }
 
+    // CHANGED: showReport now uses the shared managers instead of creating new ones
     private void showReport() 
     {
-        PatientManager pm = new PatientManager();
-        DoctorManager dm = new DoctorManager();
-        AppointmentManager am = new AppointmentManager(pm, dm);
-
         StringBuilder report = new StringBuilder();
         report.append("=== SYSTEM REPORT ===\n\n");
-        report.append("Total Patients: ").append(pm.getTotalPatients()).append("\n");
-        report.append("Total Doctors: ").append(dm.getTotalDoctors()).append("\n");
-        report.append("Total Appointments: ").append(am.getAppointments().size()).append("\n\n");
+        report.append("Total Patients: ").append(patientManager.getTotalPatients()).append("\n");
+        report.append("Total Doctors: ").append(doctorManager.getTotalDoctors()).append("\n");
+        report.append("Total Appointments: ").append(appointmentManager.getAppointments().size()).append("\n\n");
 
         report.append("=== DOCTOR SCHEDULES ===\n");
-        for (Doctor d : dm.getDoctors()) 
+        for (Doctor d : doctorManager.getDoctors()) 
         {
             report.append("\n").append(d.getName()).append(" (").append(d.getSpecialization()).append("):\n");
             boolean hasAppt = false;
-            for (Appointment a : am.getAppointments()) 
+            for (Appointment a : appointmentManager.getAppointments()) 
             {
                 if (a.getDoctor().getDoctorID().equals(d.getDoctorID())) 
                 {
