@@ -1,0 +1,5 @@
+admin|admin123|Admin
+drlim|pass123|Doctor|D001
+drwong|pass123|Doctor|D002
+drlee|pass123|Doctor|D003
+reception|pass123|Receptionist
